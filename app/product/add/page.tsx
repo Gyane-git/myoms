@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
 import {
   Plus,
   FileEdit,
@@ -18,6 +20,19 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
+
+const DB_NAME = "ERPDEMO101";
+
+type GroupOption = {
+  group: string;
+  subGroup: string;
+};
+
+function toNumber(value: string) {
+  if (!value.trim()) return 0;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 // ---------- Reusable field primitives ----------
 
@@ -150,19 +165,19 @@ function ToolbarButton({
   label,
   disabled,
   highlight,
+  href,
 }: {
   icon: React.ElementType;
   label: string;
   disabled?: boolean;
   highlight?: boolean;
+  href?: string;
 }) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      className={`flex items-center gap-1.5 text-[13px] transition-colors
-        ${disabled ? "text-slate-300 cursor-not-allowed" : "text-slate-600 hover:text-slate-900"}`}
-    >
+  const className = `flex items-center gap-1.5 text-[13px] transition-colors
+        ${disabled ? "text-slate-300 cursor-not-allowed" : "text-slate-600 hover:text-slate-900"}`;
+
+  const content = (
+    <>
       <span
         className={`grid h-6 w-6 place-items-center rounded-full border
           ${disabled ? "border-slate-200" : "border-slate-400"}
@@ -171,6 +186,24 @@ function ToolbarButton({
         <Icon size={13} />
       </span>
       {label}
+    </>
+  );
+
+  if (href && !disabled) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      className={className}
+    >
+      {content}
     </button>
   );
 }
@@ -211,7 +244,6 @@ export default function ProductNewPage() {
   const [alias, setAlias] = useState("");
   const [group, setGroup] = useState("");
   const [subGroup, setSubGroup] = useState("");
-  const [category, setCategory] = useState("");
   const [group2, setGroup2] = useState("");
   const [group3, setGroup3] = useState("");
   const [group4, setGroup4] = useState("");
@@ -242,6 +274,126 @@ export default function ProductNewPage() {
   const [lock, setLock] = useState(false);
   const [exportFlag, setExportFlag] = useState(false);
 
+  const [groupOptions, setGroupOptions] = useState<GroupOption[]>([]);
+  const [groupLoading, setGroupLoading] = useState(false);
+  const [groupError, setGroupError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadGroups() {
+      setGroupLoading(true);
+      setGroupError("");
+
+      try {
+        const res = await fetch("/api/product-groups", {
+          cache: "no-store",
+        });
+
+        const data = (await res.json()) as {
+          groups?: GroupOption[];
+          message?: string;
+        };
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to load groups");
+        }
+
+        if (active) {
+          setGroupOptions(data.groups || []);
+        }
+      } catch (error) {
+        if (!active) return;
+        setGroupError(
+          error instanceof Error ? error.message : "Failed to load groups"
+        );
+      } finally {
+        if (active) setGroupLoading(false);
+      }
+    }
+
+    loadGroups();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    setSaveMessage("");
+    setSaveError("");
+
+    try {
+      if (!name.trim()) {
+        throw new Error("Product name is required");
+      }
+
+      if (!group.trim()) {
+        throw new Error("Group is required");
+      }
+
+      const payload = {
+        objLedgerDetails: [
+          {
+            GroupName: group.trim(),
+            DbName: DB_NAME,
+            SubGroupName: subGroup.trim(),
+            ProductUnit: unit.trim(),
+            ProductAltUnit: altUnit.trim(),
+            SalesRate: toNumber(mrp || rate),
+            MRP: toNumber(mrp),
+            TradeRate: toNumber(trade),
+            PurchaseRate: toNumber(trade),
+            ProductCode: code.trim(),
+            ProductName: name.trim(),
+          },
+        ],
+      };
+
+      const res = await fetch("/api/product-save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await res.json()) as {
+        success?: boolean;
+        message?: string;
+      };
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || "Product save failed");
+      }
+
+      setSaveMessage(data.message || "Product saved successfully");
+      setName("");
+      setAlias("");
+      setGroup("");
+      setSubGroup("");
+      setCode("");
+      setCostRate("");
+      setMarginPct("");
+      setMrp("");
+      setRate("");
+      setTrade("");
+      setMop("");
+      setUnit("");
+      setAltUnit("");
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Product save failed"
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-800">
       {/* top accent bar */}
@@ -255,7 +407,7 @@ export default function ProductNewPage() {
         <ToolbarButton icon={FileDown} label="Download Templete" />
         <ToolbarButton icon={Upload} label="Import" />
         <ToolbarButton icon={RotateCw} label="Update" />
-        <ToolbarButton icon={List} label="List" />
+        <ToolbarButton icon={List} label="List" href="/product" />
         <ToolbarButton icon={MoreHorizontal} label="Branch Rate" />
         <ToolbarButton icon={MoreHorizontal} label="Product List" />
         <div className="ml-auto flex items-center gap-2 text-xl font-semibold tracking-wide text-slate-800">
@@ -277,9 +429,35 @@ export default function ProductNewPage() {
           <div className="rounded-md border border-sky-100 bg-sky-50/60 p-5">
             <PanelHeading>Info</PanelHeading>
             <div className="space-y-3">
-              <TextField label="Name" required value={name} onChange={setName} withSearch withScan />
+              <TextField label="Product Name" required value={name} onChange={setName} withSearch withScan />
               <TextField label="Alias" value={alias} onChange={setAlias} />
-              <TextField label="Group" value={group} onChange={setGroup} withSearch />
+              <div className="grid grid-cols-[110px_1fr] items-center gap-3">
+                <label className="text-sm text-slate-600">
+                  Group<span className="text-rose-500"> *</span>
+                </label>
+                <select
+                  value={group}
+                  onChange={(e) => {
+                    const nextGroup = e.target.value;
+                    setGroup(nextGroup);
+                    const matched = groupOptions.find(
+                      (option) => option.group === nextGroup
+                    );
+                    setSubGroup(matched?.subGroup || "");
+                  }}
+                  disabled={groupLoading}
+                  className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100 disabled:text-slate-400"
+                >
+                  <option value="">
+                    {groupLoading ? "Loading groups..." : "Select a group"}
+                  </option>
+                  {groupOptions.map((option) => (
+                    <option key={option.group} value={option.group}>
+                      {option.group}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <TextField label="Sub Group" value={subGroup} onChange={setSubGroup} withSearch />
               {/* <TextField label="Catagory" value={category} onChange={setCategory} withSearch /> */}
               <TextField label="Group 2" value={group2} onChange={setGroup2} withSearch />
@@ -342,6 +520,7 @@ export default function ProductNewPage() {
                   />
                 </div>
               </div>
+              {groupError && <p className="text-xs text-rose-600">{groupError}</p>}
             </div>
           </div>
 
@@ -427,18 +606,48 @@ export default function ProductNewPage() {
       </CollapsibleSection>
 
       {/* Footer actions */}
+      {(saveMessage || saveError) && (
+        <div
+          className={`mx-6 mt-4 rounded-md border px-4 py-3 text-sm ${
+            saveError
+              ? "border-rose-200 bg-rose-50 text-rose-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
+        >
+          {saveError || saveMessage}
+        </div>
+      )}
       <div className="flex items-center justify-end gap-6 border-t border-slate-200 px-6 py-4">
         <button
           type="button"
-          className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
         >
           <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-400">
             <Save size={14} />
           </span>
-          Save
+          {saving ? "Saving..." : "Save"}
         </button>
         <button
           type="button"
+          onClick={() => {
+            setName("");
+            setAlias("");
+            setGroup("");
+            setSubGroup("");
+            setCode("");
+            setCostRate("");
+            setMarginPct("");
+            setMrp("");
+            setRate("");
+            setTrade("");
+            setMop("");
+            setUnit("");
+            setAltUnit("");
+            setSaveMessage("");
+            setSaveError("");
+          }}
           className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
         >
           <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-400">
