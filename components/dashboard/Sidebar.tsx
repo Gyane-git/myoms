@@ -6,7 +6,6 @@ import {
   Database,
   Wallet,
   ShoppingCart,
-  Truck,
   Boxes,
   Building2,
   BarChart3,
