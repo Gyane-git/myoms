@@ -5,6 +5,8 @@ import { SquarePen, Trash2 } from "lucide-react";
 import DataTable, { DataTableColumn } from "@/components/dashboard/DataTable";
 import LabeledSelect from "@/components/dashboard/LabeledSelect";
 import { SAMPLE_PRODUCTS, ProductRow } from "@/lib/sampleProducts";
+import { useConfirm } from "@/components/global/ConfirmProvider";
+import { useToast } from "@/components/global/ToastProvider";
 
 const GROUP_OPTIONS = ["No Group"];
 const SUB_GROUP_OPTIONS = ["No Sub Group"];
@@ -33,9 +35,27 @@ export default function ProductCompositionPage() {
   const [group, setGroup] = useState("");
   const [subGroup, setSubGroup] = useState("");
   const [rows, setRows] = useState(SAMPLE_PRODUCTS);
+  const confirm = useConfirm();
+  const toast = useToast();
 
-  const handleDelete = (id: string) => {
-    setRows((prev) => prev.filter((r) => r.id !== id));
+  const handleDelete = async (row: ProductRow) => {
+    const ok = await confirm({
+      title: `Delete "${row.productName}"?`,
+      description:
+        "This removes the product composition entry. This action can't be undone.",
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!ok) return;
+
+    // Replace with your real API call, e.g.:
+    // await authFetch(`/api/master/product-composition/${row.id}`, { method: "DELETE" });
+
+    setRows((prev) => prev.filter((r) => r.id !== row.id));
+    toast.success({
+      title: "Deleted",
+      description: `"${row.productName}" was removed.`,
+    });
   };
 
   const columns: DataTableColumn<ProductRow>[] = [
@@ -43,7 +63,7 @@ export default function ProductCompositionPage() {
       key: "select",
       label: "",
       filterable: false,
-      render: (row) => <RowActions onDelete={() => handleDelete(row.id)} />,
+      render: (row) => <RowActions onDelete={() => handleDelete(row)} />,
     },
     { key: "code", label: "Code", sortable: true },
     { key: "shortName", label: "Short Name", sortable: true },

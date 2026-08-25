@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 
 type InfoBarProps = {
   companyCode: string;
@@ -27,6 +27,22 @@ export default function InfoBar({
       </span>
       <span className="text-blue-700">Start Date : {startDate}</span>
       <span className="text-blue-700">End Date : {endDate}</span>
+
+      <button
+        onClick={() =>
+          window.dispatchEvent(
+            new KeyboardEvent("keydown", { key: "k", ctrlKey: true })
+          )
+        }
+        className="flex items-center gap-2 px-2.5 py-1 text-xs text-slate-400 border border-slate-200 rounded-md hover:bg-slate-50"
+      >
+        <Search size={12} />
+        Search
+        <kbd className="ml-1 px-1 py-0.5 border border-slate-200 rounded text-[10px]">
+          Ctrl K
+        </kbd>
+      </button>
+
       <span className="ml-auto flex items-center gap-1.5 text-blue-700">
         User : <span className="font-medium">{userName}</span>
         <span className="relative inline-flex">

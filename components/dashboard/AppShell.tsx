@@ -1,3 +1,4 @@
+"use client";
 import InfoBar from "@/components/dashboard/ Infobar";
 import TopNavbar from "@/components/dashboard/Topnavbar";
 
@@ -11,6 +12,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         endDate="32/03/2084"
         userName="demo"
         unreadCount={3}
+        
       />
       <TopNavbar />
       <main className="p-4 md:p-6">{children}</main>
