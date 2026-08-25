@@ -4,6 +4,7 @@
 // dialogs are available on every page.
 
 import GlobalProviders from "@/components/global/GlobalProviders";
+import "./globals.css";
 
 export default function RootLayout({
   children,

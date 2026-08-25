@@ -56,8 +56,8 @@ function TextField({
   placeholder?: string;
 }) {
   return (
-    <div className="grid grid-cols-[110px_1fr] items-center gap-3">
-      <label className="text-sm text-slate-600">
+    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
+      <label className="text-sm font-medium text-slate-600">
         {label}
         {required && <span className="text-rose-500"> *</span>}
       </label>
@@ -68,16 +68,16 @@ function TextField({
           disabled={disabled}
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
-          className={`h-9 w-full rounded-md border px-3 text-sm outline-none transition-colors
-            ${disabled ? "bg-slate-100 border-slate-200 text-slate-400" : "bg-white border-slate-300"}
+          className={`h-10 w-full rounded-lg border px-3 text-sm outline-none transition-colors
+            ${disabled ? "border-slate-200 bg-slate-100 text-slate-400" : "border-slate-200 bg-slate-50 text-slate-800"}
             ${!disabled && value === "" && required ? "border-amber-300 bg-amber-50/60" : ""}
-            focus:border-sky-400 focus:ring-2 focus:ring-sky-100`}
+            focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100`}
         />
         {withSearch && (
           <button
             type="button"
             aria-label={`Search ${label}`}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
           >
             <Search size={15} />
           </button>
@@ -86,7 +86,7 @@ function TextField({
           <button
             type="button"
             aria-label="Advanced search"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-sky-300 bg-sky-50 text-sky-600 hover:bg-sky-100"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
           >
             <ScanSearch size={15} />
           </button>
@@ -110,15 +110,15 @@ function SelectField({
   options: string[];
 }) {
   return (
-    <div className="grid grid-cols-[110px_1fr] items-center gap-3">
-      <label className="text-sm text-slate-600">
+    <div className="grid grid-cols-[140px_1fr] items-center gap-3">
+      <label className="text-sm font-medium text-slate-600">
         {label}
         {required && <span className="text-rose-500"> *</span>}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+        className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -146,7 +146,7 @@ function CheckField({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-400"
+        className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
       />
     </label>
   );
@@ -154,7 +154,7 @@ function CheckField({
 
 function PanelHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mb-4 border-b border-purple-200 pb-1.5 text-[15px] font-semibold text-purple-800 underline decoration-purple-300 underline-offset-4">
+    <h3 className="mb-4 border-b border-slate-200 pb-2 text-[15px] font-semibold text-slate-700">
       {children}
     </h3>
   );
@@ -173,15 +173,19 @@ function ToolbarButton({
   highlight?: boolean;
   href?: string;
 }) {
-  const className = `flex items-center gap-1.5 text-[13px] transition-colors
-        ${disabled ? "text-slate-300 cursor-not-allowed" : "text-slate-600 hover:text-slate-900"}`;
+  const className = `inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[13px] transition-colors
+        ${
+          disabled
+            ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-300"
+            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        }`;
 
   const content = (
     <>
       <span
-        className={`grid h-6 w-6 place-items-center rounded-full border
-          ${disabled ? "border-slate-200" : "border-slate-400"}
-          ${highlight ? "border-teal-500 text-teal-600" : ""}`}
+        className={`grid h-6 w-6 place-items-center rounded-full border bg-white
+          ${disabled ? "border-slate-200 text-slate-300" : "border-slate-300 text-slate-500"}
+          ${highlight ? "border-slate-400 text-slate-700" : ""}`}
       >
         <Icon size={13} />
       </span>
@@ -219,11 +223,11 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-slate-200">
+    <div className="border-b border-slate-200 last:border-b-0">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 bg-slate-50 px-6 py-3 text-left text-lg text-slate-700 hover:bg-slate-100"
+        className="flex w-full items-center gap-2 bg-white px-6 py-3 text-left text-base font-medium text-slate-700 hover:bg-slate-50"
       >
         {open ? (
           <ChevronDown size={18} className="text-slate-400" />
@@ -397,10 +401,10 @@ export default function ProductNewPage() {
   return (
     <div className="min-h-screen bg-white text-slate-800">
       {/* top accent bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-teal-400 via-sky-400 to-teal-400" />
+      <div className="h-1 w-full bg-slate-900" />
 
       {/* toolbar */}
-      <div className="flex flex-wrap items-center gap-6 border-b border-slate-200 px-6 py-3">
+      <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-6 py-3">
         <ToolbarButton icon={Plus} label="New" />
         <ToolbarButton icon={FileEdit} label="Edit" disabled />
         <ToolbarButton icon={X} label="Delete" disabled />
@@ -410,29 +414,29 @@ export default function ProductNewPage() {
         <ToolbarButton icon={List} label="List" href="/product" />
         <ToolbarButton icon={MoreHorizontal} label="Branch Rate" />
         <ToolbarButton icon={MoreHorizontal} label="Product List" />
-        <div className="ml-auto flex items-center gap-2 text-xl font-semibold tracking-wide text-slate-800">
+        <div className="ml-auto flex items-center gap-2 text-lg font-semibold tracking-wide text-slate-800">
           PRODUCT
-          <span className="rounded bg-teal-500 px-2 py-0.5 text-xs font-bold text-white">
+          <span className="rounded bg-slate-900 px-2 py-0.5 text-xs font-bold text-white">
             NEW
           </span>
         </div>
       </div>
 
       {/* General information */}
-      <div className="bg-slate-50 px-6 py-3 text-lg text-slate-700">
+      <div className="border-b border-slate-200 bg-slate-50 px-6 py-3 text-sm font-medium uppercase tracking-[0.18em] text-slate-500">
         General Information
       </div>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 gap-4 rounded-md border border-sky-100 bg-sky-50/40 p-5 lg:grid-cols-3">
+      <div className="px-6 py-6">
+        <div className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 lg:grid-cols-3">
           {/* Info panel */}
-          <div className="rounded-md border border-sky-100 bg-sky-50/60 p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <PanelHeading>Info</PanelHeading>
             <div className="space-y-3">
               <TextField label="Product Name" required value={name} onChange={setName} withSearch withScan />
               <TextField label="Alias" value={alias} onChange={setAlias} />
-              <div className="grid grid-cols-[110px_1fr] items-center gap-3">
-                <label className="text-sm text-slate-600">
+              <div className="grid grid-cols-[140px_1fr] items-center gap-3">
+                <label className="text-sm font-medium text-slate-600">
                   Group<span className="text-rose-500"> *</span>
                 </label>
                 <select
@@ -446,7 +450,7 @@ export default function ProductNewPage() {
                     setSubGroup(matched?.subGroup || "");
                   }}
                   disabled={groupLoading}
-                  className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 disabled:bg-slate-100 disabled:text-slate-400"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100 disabled:bg-slate-100 disabled:text-slate-400"
                 >
                   <option value="">
                     {groupLoading ? "Loading groups..." : "Select a group"}
@@ -466,22 +470,22 @@ export default function ProductNewPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid grid-cols-[60px_1fr] items-center gap-2">
-                  <label className="text-sm text-slate-600">Code</label>
+                  <label className="text-sm font-medium text-slate-600">Code</label>
                   <div className="flex items-center gap-1.5">
                     <input
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                      className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                     />
                     <span className="text-amber-500">✻</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-[70px_1fr] items-center gap-2">
-                  <label className="text-sm text-slate-600">Category</label>
+                  <label className="text-sm font-medium text-slate-600">Category</label>
                   <select
                     value={productCategory}
                     onChange={(e) => setProductCategory(e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                   >
                     <option>Inventory</option>
                     <option>Service</option>
@@ -492,11 +496,11 @@ export default function ProductNewPage() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="grid grid-cols-[50px_1fr] items-center gap-2">
-                  <label className="text-sm text-slate-600">Menu</label>
+                  <label className="text-sm font-medium text-slate-600">Menu</label>
                   <select
                     value={menu}
                     onChange={(e) => setMenu(e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                   >
                     <option value="">—</option>
                     <option value="veg">Veg</option>
@@ -504,19 +508,19 @@ export default function ProductNewPage() {
                   </select>
                 </div>
                 <div className="grid grid-cols-[56px_1fr] items-center gap-2">
-                  <label className="text-sm text-slate-600">Grading</label>
+                  <label className="text-sm font-medium text-slate-600">Grading</label>
                   <input
                     value={grading}
                     onChange={(e) => setGrading(e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                   />
                 </div>
                 <div className="grid grid-cols-[60px_1fr] items-center gap-2">
-                  <label className="text-sm text-slate-600">HSCode</label>
+                  <label className="text-sm font-medium text-slate-600">HSCode</label>
                   <input
                     value={hsCode}
                     onChange={(e) => setHsCode(e.target.value)}
-                    className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                    className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                   />
                 </div>
               </div>
@@ -525,7 +529,7 @@ export default function ProductNewPage() {
           </div>
 
           {/* Price Details panel */}
-          <div className="rounded-md border border-sky-100 bg-sky-50/60 p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <PanelHeading>Price Details</PanelHeading>
             <div className="space-y-3">
               <TextField label="Cost Rate" value={costRate} onChange={setCostRate} />
@@ -538,7 +542,7 @@ export default function ProductNewPage() {
           </div>
 
           {/* Utilities panel */}
-          <div className="rounded-md border border-sky-100 bg-sky-50/60 p-5">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <PanelHeading>Utilities</PanelHeading>
             <div className="space-y-3">
               <SelectField
@@ -563,17 +567,17 @@ export default function ProductNewPage() {
               />
               <TextField label="Division" value={division} onChange={setDivision} withSearch />
 
-              <div className="grid grid-cols-[110px_1fr_1fr] items-center gap-2">
-                <label className="text-sm text-slate-600">Factor</label>
+              <div className="grid grid-cols-[140px_1fr_1fr] items-center gap-2">
+                <label className="text-sm font-medium text-slate-600">Factor</label>
                 <input
                   value={factor1}
                   onChange={(e) => setFactor1(e.target.value)}
-                  className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                 />
                 <input
                   value={factor2}
                   onChange={(e) => setFactor2(e.target.value)}
-                  className="h-9 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-100"
                 />
               </div>
 
@@ -592,23 +596,25 @@ export default function ProductNewPage() {
       </div>
 
       {/* Collapsible sections */}
-      <CollapsibleSection title="Ledger Information">
-        <p className="text-sm text-slate-500">Ledger mapping fields go here.</p>
-      </CollapsibleSection>
-      <CollapsibleSection title="Other Information">
-        <p className="text-sm text-slate-500">Additional product attributes go here.</p>
-      </CollapsibleSection>
-      <CollapsibleSection title="Unit Conversion">
-        <p className="text-sm text-slate-500">Unit conversion table goes here.</p>
-      </CollapsibleSection>
-      <CollapsibleSection title="Scheme">
-        <p className="text-sm text-slate-500">Scheme / discount rules go here.</p>
-      </CollapsibleSection>
+      <div className="mx-6 mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <CollapsibleSection title="Ledger Information">
+          <p className="text-sm text-slate-500">Ledger mapping fields go here.</p>
+        </CollapsibleSection>
+        <CollapsibleSection title="Other Information">
+          <p className="text-sm text-slate-500">Additional product attributes go here.</p>
+        </CollapsibleSection>
+        <CollapsibleSection title="Unit Conversion">
+          <p className="text-sm text-slate-500">Unit conversion table goes here.</p>
+        </CollapsibleSection>
+        <CollapsibleSection title="Scheme">
+          <p className="text-sm text-slate-500">Scheme / discount rules go here.</p>
+        </CollapsibleSection>
+      </div>
 
       {/* Footer actions */}
       {(saveMessage || saveError) && (
         <div
-          className={`mx-6 mt-4 rounded-md border px-4 py-3 text-sm ${
+          className={`mx-6 mt-4 rounded-2xl border px-4 py-3 text-sm ${
             saveError
               ? "border-rose-200 bg-rose-50 text-rose-700"
               : "border-emerald-200 bg-emerald-50 text-emerald-700"
@@ -617,14 +623,14 @@ export default function ProductNewPage() {
           {saveError || saveMessage}
         </div>
       )}
-      <div className="flex items-center justify-end gap-6 border-t border-slate-200 px-6 py-4">
+      <div className="flex items-center justify-end gap-4 border-t border-slate-200 bg-white px-6 py-4">
         <button
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-400">
+          <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-300 bg-slate-50">
             <Save size={14} />
           </span>
           {saving ? "Saving..." : "Save"}
@@ -648,9 +654,9 @@ export default function ProductNewPage() {
             setSaveMessage("");
             setSaveError("");
           }}
-          className="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900"
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-400">
+          <span className="grid h-7 w-7 place-items-center rounded-full border border-slate-300 bg-slate-50">
             <Undo2 size={14} />
           </span>
           Cancel
@@ -661,7 +667,7 @@ export default function ProductNewPage() {
       <button
         type="button"
         aria-label="Notifications"
-        className="fixed bottom-6 right-6 grid h-12 w-12 place-items-center rounded-full bg-rose-500 text-white shadow-lg hover:bg-rose-600"
+        className="fixed bottom-6 right-6 grid h-12 w-12 place-items-center rounded-full bg-slate-900 text-white shadow-lg hover:bg-slate-700"
       >
         <Bell size={18} />
       </button>
