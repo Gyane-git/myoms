@@ -167,7 +167,7 @@ export default function GroupMasterPage() {
         </button>
       </div>
 
-      <main className="p-4">
+      <main className="p-1">
         <div className="rounded border border-slate-200 bg-white shadow-sm">
           {/* import row + term setup */}
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 pt-3">

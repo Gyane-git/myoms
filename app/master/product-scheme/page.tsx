@@ -160,7 +160,7 @@ export default function ProductSchemePage() {
         </div>
       </div>
 
-      <main className="p-4">
+      <main className="p-1">
         <div className="rounded border border-slate-200 bg-white shadow-sm">
           {/* toolbar */}
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">

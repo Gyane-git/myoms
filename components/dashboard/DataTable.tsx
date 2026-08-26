@@ -125,7 +125,7 @@ export default function DataTable<T extends { id: string | number }>({
         </h1>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <div className="rounded-lg border border-slate-200 bg-white p-2">
         {topFilters && (
           <div className="flex flex-wrap items-center gap-6 mb-3 pb-3 border-b border-slate-100">
             {topFilters}

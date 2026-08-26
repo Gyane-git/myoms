@@ -7,7 +7,7 @@ import LowStockAlert from "@/components/dashboard/LowStockAlert";
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 p-3">
       <div>
         <h1 className="text-lg font-semibold text-slate-800">Dashboard</h1>
         <p className="text-sm text-slate-500">

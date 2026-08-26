@@ -159,8 +159,8 @@ export default function ProductUnitMasterPage() {
   const sortIndicator = (key: SortKey) => (sortKey === key ? (sortDir === "asc" ? "▲" : "▼") : "⇅");
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="mx-auto max-w-6xl overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
+    <div className="min-h-screen bg-gray-50 p-2">
+      <div className="mx-auto  overflow-hidden rounded border border-gray-200 bg-white shadow-sm">
         {/* Header bar */}
         <div className="flex items-center justify-between border-t-4 border-t-sky-400 bg-gray-100 px-4 py-2">
           <h1 className="text-sm font-medium text-gray-700">Brand</h1>
