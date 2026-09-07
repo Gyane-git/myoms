@@ -1,41 +1,94 @@
-import { Landmark, ShoppingBag, PackageSearch, Banknote, Receipt, Users } from "lucide-react";
-import StatCard from "@/components/dashboard/StatCard";
-import QuickActions from "@/components/dashboard/QuickActions";
-import RecentTransactions from "@/components/dashboard/RecentTransactions";
-import SalesTrend from "@/components/dashboard/SalesTrend";
-import LowStockAlert from "@/components/dashboard/LowStockAlert";
+import Image from "next/image";
+import { Fraunces } from "next/font/google";
 
-export default function DashboardPage() {
+const display = Fraunces({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+
+export default function Home() {
   return (
-    <div className="flex flex-col gap-5 p-3">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-800">Dashboard</h1>
-        <p className="text-sm text-slate-500">
-          Overview for fiscal year 2082/83, as of today
+    <main
+      className={`${display.variable} relative w-full`}
+      style={{
+        background:
+          "linear-gradient(180deg, #EEF3FC 0%, #F7F9FE 55%, #FFFFFF 100%)",
+      }}
+    >
+      {/* top hairline, spans both brand palettes */}
+      <div
+        className="h-[5px] w-full"
+        style={{
+          background:
+            "linear-gradient(90deg, #16233F 0%, #2EA8F0 35%, #7B3FE4 65%, #C9973B 100%)",
+        }}
+      />
+
+      <section className="relative mx-auto flex h-[560px] w-full max-w-[1600px] flex-col justify-between px-10 py-10 md:px-16">
+        {/* ribbon, top right — echoes the BIZ navy/gold pairing */}
+        <div className="flex justify-end">
+          <div className="flex flex-col items-end">
+            <div className="bg-[#16233F] px-8 py-3">
+              <p
+                className="text-2xl text-white"
+                style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
+              >
+                Built with <span className="italic">Purpose</span>
+              </p>
+            </div>
+            <div className="bg-[#C9973B] px-8 py-2.5">
+              <p
+                className="text-xl italic text-[#16233F]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Driven by Results&hellip;
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* center: the real DevMind logo, given room to breathe */}
+        <div className="flex flex-1 items-center">
+          <Image
+            src="/devmind-logo.png"
+            alt="DevMind Solutions"
+            width={620}
+            height={410}
+            className="h-auto w-[320px] md:w-[420px]"
+            priority
+          />
+        </div>
+
+        {/* bottom row: links (left) + real BIZ logo as the product badge (right) */}
+        <div className="flex items-end justify-between">
+          <div className="flex flex-col gap-1">
+            <a href="https://devmind.com.np" className="text-lg text-[#C9973B] hover:underline">
+              devmind.com.np
+            </a>
+            <a href="https://getbiz.app" className="text-lg text-[#C9973B] hover:underline">
+              getbiz.app
+            </a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Image
+              src="/biz-logo.png"
+              alt="BIZ — Business Integration System"
+              width={220}
+              height={220}
+              className="h-16 w-16 object-contain md:h-20 md:w-20"
+            />
+          </div>
+        </div>
+      </section>
+
+      <div className="border-t border-[#E3E7F3] px-10 py-4 md:px-16">
+        <p className="text-xs text-[#8B90B3]">
+          © 2020 - 2026 - DevMind Solutions Pvt. Ltd.
         </p>
       </div>
-
-      {/* KPI row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <StatCard label="Total Sales (MTD)" value="Rs 18.4 L" icon={ShoppingBag} changePct={12} accent="blue" />
-        <StatCard label="Total Purchase (MTD)" value="Rs 11.2 L" icon={Landmark} changePct={-4} accent="violet" />
-        <StatCard label="Stock Value" value="Rs 42.7 L" icon={PackageSearch} accent="amber" />
-        <StatCard label="Receivable" value="Rs 6.8 L" icon={Receipt} changePct={5} accent="rose" />
-        <StatCard label="Payable" value="Rs 3.1 L" icon={Banknote} changePct={-8} accent="green" />
-        <StatCard label="Active Parties" value="248" icon={Users} accent="blue" />
-      </div>
-
-      {/* Main grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-        <div className="xl:col-span-2 flex flex-col gap-5">
-          <SalesTrend />
-          <RecentTransactions />
-        </div>
-        <div className="flex flex-col gap-5">
-          <QuickActions />
-          <LowStockAlert />
-        </div>
-      </div>
-    </div>
+    </main>
   );
 }
