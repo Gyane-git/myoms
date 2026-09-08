@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import DataTable, { DataTableColumn } from "@/components/dashboard/DataTable";
+import { getAuthUser, type AuthUser } from "@/lib/authSession";
 
 type CompanyRow = {
   id: string;
@@ -12,45 +13,43 @@ type CompanyRow = {
   name: string;
   startDate: string;
   endDate: string;
-  fiscalYear: string; // "2082/83" — which fiscal year this company record belongs to
+  fiscalYear: string;
 };
-
-// Replace with a call to your .NET API, e.g.
-//   GET /api/auth/companies?fiscalYear=2083/84
-// scoped to the logged-in user's account (from the JWT) and the fiscal
-// year chosen on the previous screen.
-const COMPANIES: CompanyRow[] = [
-  { id: "BKGRP082", code: "BKGRP082", name: "B.K. GROUP PVT. LTD.", startDate: "01/04/2082", endDate: "32/03/2084", fiscalYear: "2082/83" },
-  { id: "BKGRP083", code: "BKGRP083", name: "B.K. GROUP PVT. LTD. 2083/84", startDate: "01/04/2083", endDate: "32/03/2084", fiscalYear: "2083/84" },
-  { id: "BKTRA082", code: "BKTRA082", name: "B.K. Traders And Suppliers", startDate: "01/04/2082", endDate: "32/03/2083", fiscalYear: "2082/83" },
-  { id: "BKTRA083", code: "BKTRA083", name: "B.K. Traders And Suppliers - 2083/84", startDate: "01/04/2083", endDate: "32/03/2084", fiscalYear: "2083/84" },
-  { id: "BABAE082", code: "BABAE082", name: "Baba Exim Pvt. Ltd.", startDate: "01/04/2082", endDate: "32/03/2084", fiscalYear: "2082/83" },
-  { id: "BABAE083", code: "BABAE083", name: "Baba Exim Pvt. Ltd. - 2083/84", startDate: "01/04/2083", endDate: "32/03/2084", fiscalYear: "2083/84" },
-  { id: "BK002526", code: "BK002526", name: "BK GROUP -2025-26", startDate: "01/04/2082", endDate: "32/03/2083", fiscalYear: "2082/83" },
-  { id: "DEMO2082", code: "DEMO2082", name: "DEMO - bk", startDate: "01/04/2083", endDate: "32/03/2084", fiscalYear: "2083/84" },
-];
 
 export default function SelectCompanyPage() {
   const router = useRouter();
-  const [fiscalYear, setFiscalYear] = useState<string | null>(null);
+  const [fiscalYear] = useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : window.localStorage.getItem("biz-fiscal-year")
+  );
+  const [company] = useState<AuthUser | null>(() => getAuthUser());
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("biz-fiscal-year");
-    if (!saved) {
-      // No fiscal year chosen yet — send them back to pick one first.
+    if (!fiscalYear) {
       router.replace("/select-fiscal-year");
       return;
     }
-    setFiscalYear(saved);
-  }, [router]);
 
-  const filteredCompanies = useMemo(
-    () => COMPANIES.filter((c) => c.fiscalYear === fiscalYear),
-    [fiscalYear]
-  );
+    if (!company) {
+      router.replace("/login");
+    }
+  }, [company, fiscalYear, router]);
+
+  const currentCompany: CompanyRow | null = company
+    ? {
+        id: String(company.id),
+        code: company.companyCode,
+        name: company.companyName,
+        startDate: "-",
+        endDate: "-",
+        fiscalYear: fiscalYear ?? "",
+      }
+    : null;
 
   const handleSelect = (company: CompanyRow) => {
     window.localStorage.setItem("biz-company-code", company.code);
+    window.localStorage.setItem("biz-company-name", company.name);
     router.push("/dashboard");
   };
 
@@ -74,7 +73,7 @@ export default function SelectCompanyPage() {
     },
   ];
 
-  if (!fiscalYear) return null; // redirecting
+  if (!fiscalYear || !currentCompany) return null;
 
   return (
     <div className="biz-select-company">
@@ -91,7 +90,7 @@ export default function SelectCompanyPage() {
         <DataTable
           title="Select Company"
           columns={columns}
-          data={filteredCompanies}
+          data={[currentCompany]}
           pageSize={10}
         />
       </div>

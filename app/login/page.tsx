@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Building2, User, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthField from "@/components/auth/AuthField";
+import { buildApiUrl, storeAuthSession, type AuthResponse } from "@/lib/authSession";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,20 +30,42 @@ export default function LoginPage() {
 
     setSubmitting(true);
     try {
-      // Replace with your .NET API auth endpoint:
-      // const res = await fetch("/api/auth/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ companyCode, username, password, remember }),
-      // });
-      // if (!res.ok) throw new Error("Invalid credentials");
-      // const { token } = await res.json();
-      // store token (httpOnly cookie set by the API is preferred over localStorage)
+      const res = await fetch(buildApiUrl("/api/Auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyCode: companyCode.trim(),
+          username: username.trim(),
+          password,
+        }),
+      });
 
-      await new Promise((r) => setTimeout(r, 700)); // placeholder for the real call
+      const data = (await res.json().catch(() => null)) as AuthResponse | null;
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Invalid credentials.");
+      }
+
+      if (!data.token || !data.refreshToken) {
+        throw new Error("Login succeeded but token was missing.");
+      }
+
+      storeAuthSession(
+        {
+          token: data.token,
+          refreshToken: data.refreshToken,
+          user: data.user,
+        },
+        remember
+      );
+
       router.push("/dashboard");
-    } catch {
-      setServerError("Invalid company code, username, or password.");
+    } catch (error) {
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : "Invalid company code, username, or password."
+      );
     } finally {
       setSubmitting(false);
     }

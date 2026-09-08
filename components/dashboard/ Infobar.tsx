@@ -1,4 +1,8 @@
+"use client";
+
 import { Bell, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { clearAuthSession } from "@/lib/authSession";
 
 type InfoBarProps = {
   companyCode: string;
@@ -17,6 +21,13 @@ export default function InfoBar({
   userName,
   unreadCount = 0,
 }: InfoBarProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    clearAuthSession();
+    router.replace("/login");
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 bg-white border-b border-slate-200 text-sm">
       <span className="text-blue-700">
@@ -45,6 +56,13 @@ export default function InfoBar({
 
       <span className="ml-auto flex items-center gap-1.5 text-blue-700">
         User : <span className="font-medium">{userName}</span>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="ml-2 rounded border border-red-200 px-2 py-1 text-xs text-red-600 transition-colors hover:bg-red-50"
+        >
+          Logout
+        </button>
         <span className="relative inline-flex">
           <Bell size={14} className="text-red-500" />
           {unreadCount > 0 && (

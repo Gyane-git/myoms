@@ -1,3 +1,5 @@
+import { buildApiUrl, getAuthToken } from "./authSession";
+
 /**
  * Thin wrapper around fetch for calls to your .NET Web API.
  * On a 401 (session expired / invalid token), it redirects to /login
@@ -15,21 +17,27 @@ export async function authFetch(
   input: string,
   init: RequestInit = {}
 ): Promise<Response> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-  const url = input.startsWith("http") ? input : `${baseUrl}${input}`;
+  const url = buildApiUrl(input);
+  const token = getAuthToken();
+
+  const headers = new Headers(init.headers);
+  if (!headers.has("Content-Type") && !(init.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
 
   const res = await fetch(url, {
     ...init,
     credentials: "include", // send auth cookie if you're using cookie-based sessions
-    headers: {
-      "Content-Type": "application/json",
-      ...init.headers,
-    },
+    headers,
   });
 
   if (res.status === 401 && typeof window !== "undefined") {
     const next = encodeURIComponent(window.location.pathname);
-    window.location.href = `/login?next=${next}`;
+    window.location.href = new URL(`/login?next=${next}`, window.location.origin).toString();
   }
 
   return res;

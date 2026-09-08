@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import DarkAuthBackground from "@/components/auth/DarkAuthBackground";
+import { buildApiUrl, storeAuthSession, type AuthResponse } from "@/lib/authSession";
 
 export default function LoginPage() {
   const router = useRouter();
-  
+
+  const [companyCode, setCompanyCode] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,26 +24,53 @@ export default function LoginPage() {
     setServerError("");
 
     const nextErrors: Record<string, string> = {};
-   
+    if (!companyCode.trim()) nextErrors.companyCode = "Required";
     if (!username.trim()) nextErrors.username = "Required";
     if (!password) nextErrors.password = "Required";
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
 
     setSubmitting(true);
     try {
-      // Replace with your .NET API auth endpoint:
-      // const res = await fetch("/api/auth/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ companyCode, username, password, remember }),
-      // });
-      // if (!res.ok) throw new Error("Invalid credentials");
+      const res = await fetch(buildApiUrl("/api/Auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyCode: companyCode.trim(),
+          username: username.trim(),
+          password,
+        }),
+      });
 
-      await new Promise((r) => setTimeout(r, 700)); // placeholder for the real call
+      const data = (await res.json().catch(() => null)) as AuthResponse | null;
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Invalid credentials.");
+      }
+
+      if (!data.token || !data.refreshToken) {
+        throw new Error("Login succeeded but token was missing.");
+      }
+
+      storeAuthSession(
+        {
+          token: data.token,
+          refreshToken: data.refreshToken,
+          user: data.user,
+        },
+        remember
+      );
+
       router.push("/select-fiscal-year");
-    } catch {
-      setServerError("Invalid company code, username, or password.");
+    } catch (error) {
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : "Invalid company code, username, or password."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -56,14 +85,25 @@ export default function LoginPage() {
           <div className="biz-login__brand-badge">
             <Image src="/biz-logo.png" alt="BIZ" width={40} height={40} />
           </div>
-          
         </div>
 
         <h1 className="biz-login__title">Sign in to your account</h1>
         <p className="biz-login__subtitle">Business Integration System</p>
 
         <form onSubmit={handleSubmit} className="biz-login__form" noValidate>
-          
+          <div className="biz-login__field">
+            <label htmlFor="companyCode">Company code</label>
+            <input
+              id="companyCode"
+              value={companyCode}
+              onChange={(e) => setCompanyCode(e.target.value)}
+              placeholder="ERPDEMO1"
+              autoComplete="organization"
+            />
+            {errors.companyCode && (
+              <span className="biz-login__error">{errors.companyCode}</span>
+            )}
+          </div>
 
           <div className="biz-login__field">
             <label htmlFor="username">Username</label>
@@ -113,7 +153,6 @@ export default function LoginPage() {
               />
               Remember me
             </label>
-           
           </div>
 
           {serverError && <p className="biz-login__server-error">{serverError}</p>}
@@ -185,13 +224,6 @@ export default function LoginPage() {
           justify-content: center;
           overflow: hidden;
           box-shadow: 0 0 0 3px rgba(231, 197, 131, 0.25);
-        }
-        .biz-login__brand-name {
-          font-family: Georgia, "Times New Roman", serif;
-          font-size: 22px;
-          font-weight: 700;
-          letter-spacing: 0.02em;
-          color: #fff;
         }
 
         .biz-login__title {
@@ -290,15 +322,6 @@ export default function LoginPage() {
         }
         .biz-login__remember input {
           accent-color: #c79a45;
-        }
-        .biz-login__link {
-          font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-          font-size: 12.5px;
-          color: #e7c583;
-          text-decoration: none;
-        }
-        .biz-login__link:hover {
-          text-decoration: underline;
         }
 
         .biz-login__server-error {
