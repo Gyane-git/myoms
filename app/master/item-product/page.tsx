@@ -1,5 +1,5 @@
-import ProductRelationCrud from "@/components/master/ProductRelationCrud";
+import ProductEditor from "@/components/master/ProductEditor";
 
 export default function Page() {
-  return <ProductRelationCrud kind="product" />;
+  return <ProductEditor />;
 }

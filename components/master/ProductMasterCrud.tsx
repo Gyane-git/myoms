@@ -30,6 +30,22 @@ const CONFIG: Record<MasterKind, { title: string; endpoint: string }> = {
 
 const GENERATED_CODE_FIELDS = new Set(["code"]);
 
+const CODE_PREFIXES: Record<MasterKind, string> = {
+  brand: "BRD",
+  category: "CAT",
+  group: "GRP",
+  subgroup: "SUB",
+};
+
+function nextCode(rows: MasterRow[], prefix: string) {
+  const next = rows.reduce((highest, row) => {
+    const match = row.code.match(new RegExp(`^${prefix}(\\d+)$`));
+    return Math.max(highest, match ? Number(match[1]) : 0);
+  }, 0) + 1;
+
+  return `${prefix}${String(next).padStart(5, "0")}`;
+}
+
 async function readApiData<T>(response: Response): Promise<T> {
   const body = (await response.json().catch(() => null)) as
     | { data?: T; message?: string }
@@ -126,7 +142,7 @@ export default function ProductMasterCrud({ kind }: { kind: MasterKind }) {
   const openAdd = () => {
     setEditing(null);
     setForm({
-      code: "",
+      code: nextCode(rows, CODE_PREFIXES[kind]),
       name: "",
       description: "",
       isActive: true,
