@@ -87,6 +87,12 @@ export const MASTER_MENU: MegaMenuColumn[] = [
     {
       heading: "Others",
       links: [
+        link("Branches", "branch"),
+        link("Company Units", "company-unit"),
+        link("Fiscal Years", "fiscal-year"),
+        link("Fiscal Year Periods", "fiscal-year-period"),
+        link("Warehouses", "warehouse"),
+        link("Warehouse Locations", "location"),
         link("Godown", "godown"),
         link("Cost Center", "cost-center"),
         link("Currency", "currency"),

@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import MegaMenu from "@/components/dashboard/ Megamenu";
 import type { MegaMenuColumn } from "@/lib/menuTypes";
 import { MASTER_MENU } from "@/lib/menuData";
+import { getAuthToken } from "@/lib/authSession";
 
 type NavChild = {
   label: string;
@@ -52,8 +53,25 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function TopNavbar() {
   const [openItem, setOpenItem] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const token = getAuthToken();
+      if (!token) return;
+      try {
+        const payload = JSON.parse(window.atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))) as Record<string, unknown>;
+        const roleClaim = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? payload.role;
+        const roles = Array.isArray(roleClaim) ? roleClaim : [roleClaim];
+        setIsAdmin(roles.some((role) => String(role).toUpperCase() === "ADMIN"));
+      } catch {
+        setIsAdmin(false);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const handleEnter = (label: string) => {
     if (closeTimer.current) {
@@ -88,8 +106,8 @@ export default function TopNavbar() {
               onMouseEnter={() => handleEnter(item.label)}
             >
               {/* NAV ITEM */}
-              <a
-                href={item.href ?? "#"}
+                <a
+                  href={item.href ?? "#"}
                 className={`flex items-center gap-1 whitespace-nowrap px-4 py-2.5 text-sm transition-colors hover:bg-teal-600 ${
                   isOpen ? "bg-teal-600" : ""
                 }`}
@@ -109,7 +127,7 @@ export default function TopNavbar() {
                     }
                   }}
                 >
-                  {item.children.map((child) => (
+                  {item.children.filter((child) => child.label !== "Company Master" || isAdmin).map((child) => (
                     <a
                       key={child.label}
                       href={child.href}

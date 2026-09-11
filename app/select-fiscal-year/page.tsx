@@ -137,6 +137,20 @@ export default function SelectFiscalYearPage() {
           </select>
         </div>
 
+        {!loading && fiscalYears.length === 0 && !error && (
+          <div className="biz-fy-form__empty">
+            <strong>No fiscal year is configured for this company.</strong>
+            <span>Create the first fiscal year to continue using the ERP.</span>
+            <button
+              type="button"
+              className="biz-fy-form__setup"
+              onClick={() => router.push("/master/fiscal-year")}
+            >
+              Create Fiscal Year
+            </button>
+          </div>
+        )}
+
         {error && <p className="biz-fy-form__error">{error}</p>}
 
         <button
@@ -222,6 +236,34 @@ export default function SelectFiscalYearPage() {
           color: #b42318;
           font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
           font-size: 12px;
+        }
+        .biz-fy-form__empty {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          margin: 0 0 18px;
+          padding: 13px;
+          border: 1px solid #ead9b3;
+          border-radius: 7px;
+          background: #fffaf0;
+          color: #6f5424;
+          font-size: 12px;
+        }
+        .biz-fy-form__empty strong {
+          color: #4c3919;
+          font-size: 13px;
+        }
+        .biz-fy-form__setup {
+          align-self: flex-start;
+          margin-top: 5px;
+          padding: 8px 12px;
+          border: 0;
+          border-radius: 6px;
+          background: #1c2b48;
+          color: #fff;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 600;
         }
         .biz-fy-form__spinner {
           animation: biz-spin 0.8s linear infinite;

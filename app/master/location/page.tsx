@@ -1,5 +1,5 @@
-import ProductRelationCrud from "@/components/master/ProductRelationCrud";
+import CompanySetupCrud from "@/components/master/CompanySetupCrud";
 
 export default function LocationPage() {
-  return <ProductRelationCrud kind="location" />;
+  return <CompanySetupCrud kind="location" />;
 }
