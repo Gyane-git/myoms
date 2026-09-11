@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpDown,
   Search,
@@ -9,6 +9,7 @@ import {
   FileText,
   Printer,
   Columns3,
+  Check,
 } from "lucide-react";
 
 export type DataTableColumn<T> = {
@@ -19,6 +20,8 @@ export type DataTableColumn<T> = {
   align?: "left" | "right" | "center";
   render?: (row: T) => React.ReactNode;
   accessor?: (row: T) => string; // used for sort/filter/search when value isn't a plain string field
+  /** Exclude from Copy/Excel/Print exports (e.g. an actions column with buttons, not data). */
+  exportable?: boolean;
 };
 
 type DataTableProps<T extends { id: string | number }> = {
@@ -41,6 +44,34 @@ export default function DataTable<T extends { id: string | number }>({
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [columnMenuOpen, setColumnMenuOpen] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
+  const columnMenuRef = useRef<HTMLDivElement>(null);
+  const tableId = useRef(`biz-table-${Math.random().toString(36).slice(2, 8)}`);
+
+  useEffect(() => {
+    const onClickOutside = (e: MouseEvent) => {
+      if (
+        columnMenuRef.current &&
+        !columnMenuRef.current.contains(e.target as Node)
+      ) {
+        setColumnMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  const visibleColumns = useMemo(
+    () => columns.filter((c) => !hiddenCols.has(c.key)),
+    [columns, hiddenCols]
+  );
+
+  const exportableColumns = useMemo(
+    () => visibleColumns.filter((c) => c.exportable !== false),
+    [visibleColumns]
+  );
 
   const getValue = (row: T, col: DataTableColumn<T>): string => {
     if (col.accessor) return col.accessor(row);
@@ -100,6 +131,89 @@ export default function DataTable<T extends { id: string | number }>({
     setPage(1);
   };
 
+  const toggleColumn = (key: string) => {
+    setHiddenCols((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  // --- Export helpers: all operate on the full filtered set, not just the current page ---
+
+  const buildRows = () =>
+    filtered.map((row) =>
+      exportableColumns.map((col) => getValue(row, col))
+    );
+
+  const csvEscape = (value: string) => {
+    if (/[",\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+    return value;
+  };
+
+  const handleCopy = async () => {
+    const header = exportableColumns.map((c) => c.label).join("\t");
+    const body = buildRows()
+      .map((r) => r.join("\t"))
+      .join("\n");
+    try {
+      await navigator.clipboard.writeText(`${header}\n${body}`);
+      setCopyStatus("copied");
+      setTimeout(() => setCopyStatus("idle"), 1500);
+    } catch {
+      // Clipboard API may be blocked (permissions/insecure context) — fail quietly.
+    }
+  };
+
+  const handleExportExcel = () => {
+    const header = exportableColumns.map((c) => csvEscape(c.label)).join(",");
+    const body = buildRows()
+      .map((r) => r.map(csvEscape).join(","))
+      .join("\n");
+    const csv = `${header}\n${body}`;
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.replace(/\s+/g, "-").toLowerCase()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    // Print (or "Save as PDF" from the browser print dialog) just this
+    // table's printable region, not the whole app chrome.
+    const el = document.getElementById(tableId.current);
+    if (!el) {
+      window.print();
+      return;
+    }
+    const win = window.open("", "_blank", "width=1024,height=768");
+    if (!win) return;
+    win.document.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body { font-family: ui-sans-serif, system-ui, sans-serif; padding: 24px; }
+            h1 { font-size: 16px; margin-bottom: 12px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+            th { background: #f3f4f6; }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          ${el.outerHTML}
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+  };
+
   const pageNumbers = useMemo(() => {
     const nums: (number | "...")[] = [];
     const windowSize = 3;
@@ -125,7 +239,7 @@ export default function DataTable<T extends { id: string | number }>({
         </h1>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-2">
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
         {topFilters && (
           <div className="flex flex-wrap items-center gap-6 mb-3 pb-3 border-b border-slate-100">
             {topFilters}
@@ -135,21 +249,63 @@ export default function DataTable<T extends { id: string | number }>({
         {/* toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50">
-              <Copy size={13} /> Copy
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
+              {copyStatus === "copied" ? (
+                <Check size={13} className="text-emerald-600" />
+              ) : (
+                <Copy size={13} />
+              )}
+              {copyStatus === "copied" ? "Copied" : "Copy"}
             </button>
-            <button className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50">
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
               <FileSpreadsheet size={13} /> Excel
             </button>
-            <button className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50">
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
               <FileText size={13} /> PDF
             </button>
-            <button className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50">
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+            >
               <Printer size={13} /> Print
             </button>
-            <button className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50">
-              <Columns3 size={13} /> Column visibility
-            </button>
+
+            <div className="relative" ref={columnMenuRef}>
+              <button
+                onClick={() => setColumnMenuOpen((o) => !o)}
+                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded border border-slate-300 text-slate-600 hover:bg-slate-50"
+              >
+                <Columns3 size={13} /> Column visibility
+              </button>
+              {columnMenuOpen && (
+                <div className="absolute left-0 top-full mt-1 w-56 max-h-72 overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg z-20 py-1">
+                  {columns
+                    .filter((c) => c.label) // skip unlabeled action columns
+                    .map((col) => (
+                      <label
+                        key={col.key}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!hiddenCols.has(col.key)}
+                          onChange={() => toggleColumn(col.key)}
+                        />
+                        {col.label}
+                      </label>
+                    ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -173,10 +329,10 @@ export default function DataTable<T extends { id: string | number }>({
 
         {/* table */}
         <div className="overflow-x-auto border border-slate-100 rounded">
-          <table className="w-full text-sm">
+          <table id={tableId.current} className="w-full text-sm">
             <thead>
               <tr className="bg-slate-50 text-left text-slate-600 border-b border-slate-200">
-                {columns.map((col) => (
+                {visibleColumns.map((col) => (
                   <th
                     key={col.key}
                     className={`px-3 py-2 font-medium whitespace-nowrap ${
@@ -218,7 +374,7 @@ export default function DataTable<T extends { id: string | number }>({
                     idx % 2 === 1 ? "bg-slate-50/40" : ""
                   }`}
                 >
-                  {columns.map((col) => (
+                  {visibleColumns.map((col) => (
                     <td
                       key={col.key}
                       className={`px-3 py-2 text-slate-700 whitespace-nowrap ${
@@ -237,7 +393,7 @@ export default function DataTable<T extends { id: string | number }>({
               {pageRows.length === 0 && (
                 <tr>
                   <td
-                    colSpan={columns.length}
+                    colSpan={visibleColumns.length}
                     className="px-3 py-6 text-center text-slate-400 text-sm"
                   >
                     No matching records found
@@ -247,7 +403,7 @@ export default function DataTable<T extends { id: string | number }>({
             </tbody>
             <tfoot>
               <tr className="bg-slate-50/60 border-t border-slate-200">
-                {columns.map((col) => (
+                {visibleColumns.map((col) => (
                   <td key={col.key} className="px-3 py-1.5">
                     {col.filterable === false ? null : (
                       <div className="relative">

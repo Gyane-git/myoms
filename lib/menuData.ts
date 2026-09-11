@@ -10,6 +10,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "Chart of Account",
+      permission: "PERM_CHART_OF_ACCOUNTS",
       links: [
         link("Account Group", "account-group"),
         link("Account Sub Group", "account-sub-group"),
@@ -32,6 +33,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "Product",
+      permission: "PERM_PRODUCT_MASTER",
       links: [
         link("Products", "item-product"),
         link("Product Category", "group-1"),
@@ -62,6 +64,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "Billing Term",
+      permission: "PERM_SALES",
       links: [
         link("Purchase Term", "purchase-term"),
         link("Sales Term", "sales-term"),
@@ -69,6 +72,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
     },
     {
       heading: "Area/Agent",
+      permission: "PERM_SALES",
       links: [
         link("Main Area", "main-area"),
         link("Region", "region"),
@@ -76,6 +80,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
     },
     {
       heading: "Division",
+      permission: "PERM_UTILITY",
       links: [
         link("Type", "division-type"),
         link("Master", "division-master"),
@@ -86,6 +91,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "Others",
+      permission: "PERM_WAREHOUSE_MASTER",
       links: [
         link("Branches", "branch"),
         link("Company Units", "company-unit"),
@@ -104,6 +110,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "Mechanic Apps",
+      permission: "PERM_INVENTORY",
       links: [
         link("Mechanic Redeem Points", "mechanic-redeem-points"),
         link("Mechanic Login", "mechanic-login"),
@@ -118,6 +125,7 @@ export const MASTER_MENU: MegaMenuColumn[] = [
   [
     {
       heading: "SMS",
+      permission: "PERM_UTILITY",
       links: [
         link("Contact Master", "contact-master"),
         link("SMS API Setting", "sms-api-setting"),

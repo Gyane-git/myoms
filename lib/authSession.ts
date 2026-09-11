@@ -77,6 +77,22 @@ export function getAuthToken() {
   );
 }
 
+export function getAuthPermissions(): string[] {
+  const token = getAuthToken();
+  if (!token) return [];
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1])) as { permission?: string | string[] };
+    const value = payload.permission;
+    return Array.isArray(value) ? value : value ? [value] : [];
+  } catch {
+    return [];
+  }
+}
+
+export function hasAuthPermission(permission: string) {
+  return getAuthPermissions().includes(permission);
+}
+
 export function getAuthUser() {
   if (typeof window === "undefined") {
     return null;
