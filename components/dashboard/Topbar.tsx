@@ -26,7 +26,7 @@ const HOME_MENU: MegaMenuColumn[] = [
     {
       heading: "Workspace",
       links: [
-        { label: "Main", href: "/main" },
+        { label: "Overview", href: "/home" },
         { label: "Dashboard", href: "/dashboard" },
       ],
     },
